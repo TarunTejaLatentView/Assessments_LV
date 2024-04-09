@@ -1,0 +1,91 @@
+use internal_assessment_1;
+### LAB 1 ###
+
+# Question 1
+select customerid from customerinteractions where month = "March" and year = 2024
+and dataused > (select avg(dataused) from customerinteractions);
+
+# Question 2
+select customerid, month, sum(callduration) from customerinteractions group by CustomerID, month
+having sum(callduration) > (select sum(callduration) from customerinteractions where
+month = "February");
+
+# Question 3
+select customerid, month, sum(callduration) from customerinteractions group by CustomerID, month
+having sum(callduration) > (select sum(callduration) from customerinteractions where
+month = "February");
+
+
+### LAB 2 ###
+
+# Question 3:
+# Retriveing all types
+select producttypeid, sum(totalsalesamount) from quarterlysales
+group by producttypeid;
+
+# Type 1 alone
+select producttypeid, sum(totalsalesamount) from quarterlysales where ProductTypeID = 1
+group by producttypeid;
+
+# Question 5:
+select producttypeid, sum(totalsalesamount) from quarterlysales where quarter = "Q1"
+group by producttypeid order by sum(TotalSalesAmount) desc limit 1;
+
+# Question 6:
+select producttypeid, (sum(totalsalesamount)/sum(unitssold)) as res from quarterlysales 
+where ProductTypeID = 1 and quarter = "Q2" and year = 2024
+group by producttypeid;
+
+#Therefore the average price per unit was 52.3810
+
+
+### LAB 3 ###
+
+# Question 7
+select region, ConsumptionKWh from sectorenergyconsumption where month = "March" and year = "2024"
+and ConsumptionKWh > 
+(select avg(ConsumptionKWh) from sectorenergyconsumption where EnergySource in ("Wind","Solar"));
+
+# Question 8
+create view febstuff as select sector, sum(ConsumptionKWh) as toco from sectorenergyconsumption where month = "February" and year = 2024;
+create view marchstuff as select sector, sum(ConsumptionKWh) as toco from sectorenergyconsumption where month = "March" and year = 2024;
+select f.sector, m.toco from febstuff f join marchstuff m on f.sector = m.sector where f.toco < m.toco;
+
+create view febs as select sector, ConsumptionKWh from sectorenergyconsumption where month = "February" and year = 2024;
+create view marchs as select sector, ConsumptionKWh from sectorenergyconsumption where month = "March" and year = 2024;
+select m.sector, sum(m.ConsumptionKWh) from marchs m join febs f on m.sector = f.sector where m.ConsumptionKWh > f.ConsumptionKWh group by m.sector;
+
+# Question 9
+select energysource, sum(consumptionkwh) from sectorenergyconsumption group by energysource;
+# Fossil Fuels = 400000, Renewable sources = 700000
+
+
+### LAB 4 ###
+
+# Question 10
+select customername from insuranceactivities
+where 
+feedbackscore > (select avg(feedbackscore) from insuranceactivities) and
+claimscount > (select avg(claimscount) from insuranceactivities);
+
+
+# Question 11
+# Total revenue
+select sum(annualpremium) from insuranceactivities where Investigation = "No"
+and feedbackscore > (select avg(feedbackscore) from insuranceactivities)
+and claimscount >0;
+
+# Policy wise split up
+select policyid, sum(annualpremium) from insuranceactivities where Investigation = "No"
+and feedbackscore > (select avg(feedbackscore) from insuranceactivities)
+and claimscount >0 group by policyid;
+
+# Question 12
+select policytype, 
+CASE
+	when claimscount <2 then "Minimal Claims"
+    when claimscount <4 then "Moderate Claims"
+    else "Heavy Claims"
+end as claimcategory, avg(feedbackscore)
+from insuranceactivities group by policytype, claimcategory having avg(feedbackscore)>0;
+
