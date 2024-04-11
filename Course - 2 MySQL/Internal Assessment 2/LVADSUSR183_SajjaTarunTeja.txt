@@ -1,0 +1,76 @@
+use internal_assessment_2;
+
+### LAB 1 ###
+
+# Question 1
+select machine_id from l1_maintenance_records where cost > (select avg(cost) from l1_maintenance_records);
+
+# Question 2
+select maintenance_type, count(maintenance_type) as mc from l1_maintenance_records 
+where month(maintenance_date) = 3 and year(maintenance_date) = 2024 group by maintenance_type  order by mc desc;
+# March = 3rd month
+
+# Question 3
+select technician_name, count(technician_name), avg(cost) from l1_maintenance_records
+where month(maintenance_date) = 3 and year(maintenance_date) = 2024
+group by technician_name;
+
+
+### LAB 2 ###
+
+# Question 4
+select product_id, avg(incident_count_pre_update - incident_count_post_update) from l2_updates
+group by product_id;
+
+# Question 5
+select update_id, user_feedback_score from l2_updates order by user_feedback_score desc limit 1;
+set autocommit = 0;
+commit;
+
+# Question 6
+select product_id, sum(incident_count_pre_update - incident_count_post_update) as ic from l2_updates
+group by product_id order by ic limit 1;
+# The crux here is that the difference in the count should be large for a update to be worthwhile.
+# If the difference in the count is small that translates to the update not being very effective. 
+# Therefore the product retrieved in this query should be focused and the updates need to be better.
+
+
+### LAB 3 ###
+
+# Question 7
+select p.patient_name, f.facility_name, v.reason_for_visit, t.outcome from l3_treatments t
+join l3_visits v using (visit_id)
+join l3_patients p using(patient_id) join l3_facilities f using(facility_id);
+
+# Question 8
+select f.facility_name, count(v.facility_id) as ec from l3_facilities f join
+l3_visits v using (facility_id) where v.reason_for_visit = "Emergency" and month(visit_date) = 3
+and year(visit_date) = 2024 group by facility_name order by ec desc limit 1;
+
+# Question 9
+select p.insurance_provider, count(t.outcome) from l3_patients p
+join l3_visits v using(patient_id) join l3_treatments t using (visit_id)
+where quarter(visit_date) =  1 and year(visit_date) = 2024 and t.outcome = "Complicated"
+group by p.insurance_provider;
+
+
+### LAB 4 ###
+
+# Question 10
+select p.product_name, p.category, s.quantity
+from 
+(select product_id, product_name, category from l4_products) as p,
+(select product_id, quantity from l4_sales where month(sale_date) = 3 and year(sale_date) = 2024) as s
+where p.product_id = s.product_id order by s.quantity desc;
+
+# Question 11
+select st.region, sum(s.quantity*p.price) as res from l4_stores st join l4_sales s using (store_id) 
+join l4_products p using (product_id) where quarter(s.sale_date) = 1 and year(s.sale_date) = 2024
+group by st.region order by res desc;
+
+#Question 12
+select st.region, count(p.product_id), count(p.category) from l4_sales s join l4_products p using (product_id)
+ join (l4_stores);
+
+select st.region, st.store_id from l4_stores;
+select s.store_id, count(p.product_id), count(p.category) from l4_sales s join l4_products p using (product_id);
