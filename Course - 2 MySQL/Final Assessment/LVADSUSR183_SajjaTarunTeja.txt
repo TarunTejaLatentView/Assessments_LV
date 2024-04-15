@@ -1,0 +1,131 @@
+use final_assessment;
+### LAB 1 ###
+
+# Question 1
+select pr.product_category, avg(sr.sales_amount) from sales_records sr join 
+products pr using (product_id) where sales_date >= date_sub(current_date, interval 1 month) 
+group by pr.product_category;
+
+# Question 2
+with q2cte as
+(
+select product_id, sales_amount,rank() 
+over (order by sales_amount desc) as rankc from sales_records
+)
+select * from q2cte where rankc in (1,2,3);
+
+# Question 3
+select product_id, sales_amount,percent_rank() 
+over (order by sales_amount) as rankc from sales_records;
+
+# Question 4
+
+
+### LAB 2 ###
+
+# Question 5
+select departure_airport, arrival_airport, avg(base_price) from flights
+group by departure_airport, arrival_airport;
+
+# Question 6
+select t.flight_id, count(t.ticket_id) as total_tickets, f.flight_number, 
+f.departure_date from tickets t join flights f using (flight_id) 
+group by t.flight_id order by total_tickets;
+
+# Question 7
+select t.passenger_id, p.passenger_name, sum(t.ticket_price) as total_spent, p.frequent_flyer_status
+from tickets t join passengers p using (passenger_id) group by t.passenger_id
+order by total_spent desc;
+
+# Question 8
+select month(ticket_date) as mon, count(ticket_id) as tickets_sold
+from tickets group by mon order by tickets_sold desc limit 1;
+
+### LAB 3 ###
+
+# Question 9
+select g.game_genre, avg(timediff(ps.play_date,p.registration_date))/60 as avgtime 
+from playerscores ps join players p using (player_id) join games g using (game_id)
+group by g.game_genre;
+
+# Question 10
+select ps.game_id, g.game_name, count(ps.player_id) as total_players from playerscores ps
+join games g using (game_id) group by ps.game_id;
+
+# Question 11
+select ps.game_id, g.game_name, count(ps.player_id) as total_players,
+avg(score) as avgscore, max(score) as highest_score
+from playerscores ps
+join games g using (game_id) group by ps.game_id;
+
+# Question 12
+select ps.player_id, p.player_name, p.registration_date, ps.play_date from
+playerscores ps join players p using (player_id) 
+where ps.play_date < date_sub(current_date, interval 1 month);
+
+# Question 13
+select t.doctor_id, d.doctor_name, sum(t.cost) as total_cost from treatments t join 
+doctors d using (doctor_id) group by t.doctor_id order by total_cost desc;
+
+# Question 14
+select treatment_name, sum(cost) as tcost,
+(sum(cost)/(select sum(cost) from treatments))*100 as perce
+from treatments 
+group by treatment_name order by tcost desc;
+
+# Question 15
+select patient_id, patient_name, admission_date, discharge_date from patients
+where datediff(discharge_date,admission_date) < 30 
+and datediff(discharge_date,admission_date) > 0 order by admission_date;
+
+
+# Question 16
+select gender,age, avg(datediff(discharge_date,admission_date)) as LOS
+from patients group by gender, age order by LOS desc;
+
+# Question 17
+select c.department, e.semester, avg(e.grade) as avggrade from enrollments e
+join courses c using (course_id) group by c.department,e.semester;
+
+# Question 18
+select major, count(student_id) as total_enrolled from students group by major
+order by total_enrolled desc;
+
+# Question 19
+select s.student_id, s.student_name, e.semester, sum(c.credits) over (partition by e.semester) as total_credits
+from enrollments e join students s using (student_id)
+join courses c using (course_id);
+
+
+# Question 20
+select course_id, count(student_id) as totalst from enrollments group by course_id order by totalst desc limit 3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
